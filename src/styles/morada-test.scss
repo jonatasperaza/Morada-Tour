@@ -87,6 +87,21 @@
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(14px);
+  transition:
+    color 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.socials a:hover {
+  color: #d7ff00;
+  border-color: rgba(215, 255, 0, 0.58);
+  transform: translateY(-2px);
+}
+
+.socials .mdi {
+  font-size: 1.2rem;
+  line-height: 1;
 }
 
 .morada-hero {
@@ -484,6 +499,52 @@
   cursor: pointer;
 }
 
+.morada-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 30px clamp(24px, 7vw, 120px);
+  color: rgba(255, 255, 255, 0.62);
+  background: #030303;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.morada-footer span {
+  color: white;
+  font-family: 'Anton', sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 0;
+}
+
+.morada-footer p {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.footer-credit {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.footer-credit a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #d7ff00;
+  text-decoration: none;
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.footer-credit .mdi {
+  font-size: 1.16rem;
+  line-height: 1;
+}
+
 @media (max-width: 980px) {
   .main-nav,
   .socials,
@@ -520,6 +581,19 @@
     background:
       linear-gradient(90deg, rgba(0, 0, 0, 0.96), rgba(0, 0, 0, 0.74)),
       url('/images/banda.webp') center bottom / cover no-repeat;
+  }
+
+  .morada-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-credit {
+    justify-items: start;
+  }
+
+  .morada-footer p {
+    text-align: left;
   }
 }
 

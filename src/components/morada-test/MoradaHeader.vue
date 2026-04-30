@@ -11,9 +11,30 @@
     </nav>
 
     <div class="socials">
-      <a aria-label="Instagram" href="#">IG</a>
-      <a aria-label="YouTube" href="#">YT</a>
-      <a aria-label="Spotify" href="#">SP</a>
+      <a
+        aria-label="Instagram do Morada"
+        href="https://www.instagram.com/moradaoficial/"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        <span aria-hidden="true" class="mdi mdi-instagram" />
+      </a>
+      <a
+        aria-label="YouTube do Morada"
+        href="https://www.youtube.com/channel/UCQp4yrRCGdGWi4TrF6xJyfg"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        <span aria-hidden="true" class="mdi mdi-youtube" />
+      </a>
+      <a
+        aria-label="Spotify do Morada"
+        href="https://open.spotify.com/artist/2tswayWsUGjUwpvN8KRwuN"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        <span aria-hidden="true" class="mdi mdi-spotify" />
+      </a>
     </div>
   </header>
 </template>
