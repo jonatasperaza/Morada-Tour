@@ -51,10 +51,6 @@
       <span class="eyebrow">Tour Morada 2025</span>
       <h2>Uma experi&ecirc;ncia intensa, viva e feita para marcar.</h2>
 
-      <p>
-        Uma landing page com atmosfera de show, profundidade visual e transi&ccedil;&otilde;es
-        controladas pelo scroll, usando os elementos oficiais do Morada.
-      </p>
     </section>
 
     <img

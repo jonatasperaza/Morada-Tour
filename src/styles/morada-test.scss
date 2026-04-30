@@ -256,7 +256,7 @@
 .side-copy {
   position: absolute;
   left: clamp(18px, 3vw, 54px);
-  top: 50%;
+  top: 80%;
   z-index: 10;
   transform: translateY(-50%) rotate(-90deg);
   transform-origin: left center;
@@ -276,7 +276,7 @@
 .story-panel {
   position: absolute;
   left: clamp(24px, 7vw, 120px);
-  bottom: 14vh;
+  bottom: 1vh;
   z-index: 11;
   max-width: 520px;
   opacity: 0;
@@ -312,7 +312,7 @@
 .story-image {
   position: absolute;
   right: clamp(20px, 6vw, 100px);
-  bottom: 5vh;
+  bottom: 0;
   z-index: 10;
   width: min(540px, 42vw);
   opacity: 0;

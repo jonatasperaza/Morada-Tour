@@ -64,7 +64,7 @@ export function useMoradaScrollExperience () {
         scrollTrigger: {
           trigger: '.morada-hero',
           start: 'top top',
-          end: '+=2800',
+          end: '+=1200',
           scrub: true,
           pin: true,
         },
