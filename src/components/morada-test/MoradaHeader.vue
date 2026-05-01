@@ -19,6 +19,7 @@
       >
         <span aria-hidden="true" class="mdi mdi-instagram" />
       </a>
+
       <a
         aria-label="YouTube do Morada"
         href="https://www.youtube.com/channel/UCQp4yrRCGdGWi4TrF6xJyfg"
@@ -27,6 +28,7 @@
       >
         <span aria-hidden="true" class="mdi mdi-youtube" />
       </a>
+
       <a
         aria-label="Spotify do Morada"
         href="https://open.spotify.com/artist/2tswayWsUGjUwpvN8KRwuN"
