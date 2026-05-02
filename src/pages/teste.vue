@@ -292,7 +292,6 @@ onBeforeUnmount(() => {
   @mousemove="mousemoveBackground"
   @mouseleave="mouseleaveBackground"
 >
-    <!-- fundo -->
     <div class="grid-screen">
 <div
   v-for="(_, index) in boxes"
@@ -304,8 +303,6 @@ onBeforeUnmount(() => {
   {{ index + 1 }}
 </div>
     </div>
-
-    <!-- conteúdo por cima -->
     <div ref="boxScrub1" class="box box1">box1</div>
     <div ref="boxScrub2" class="box box2">box2</div>
     <div ref="boxScrub3" class="box box3">box3</div>
