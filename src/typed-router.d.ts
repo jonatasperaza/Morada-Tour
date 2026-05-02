@@ -44,6 +44,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/teste': RouteRecordInfo<
+      '/teste',
+      '/teste',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
   }
 
   /**
@@ -66,6 +73,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/femello.vue': {
       routes:
         | '/femello'
+      views:
+        | never
+    }
+    'src/pages/teste.vue': {
+      routes:
+        | '/teste'
       views:
         | never
     }
