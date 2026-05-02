@@ -13,6 +13,9 @@ const omaga = ref(null)
 const texto = 'OOOOOOOOOOOOOOOOOOOOOMAGA'
 const letrasTexto = texto.split('')
 const letrasRefs = ref([])
+const svgContainer = ref(null)
+
+
 
 
 let min = 48
@@ -149,10 +152,104 @@ let ctx
 
 const strength = 0.15
 
+async function mysignaturasvgomaga() {
+  await nextTick()
 
+  const response = await fetch('/aaa.svg')
+  const svgText = await response.text()
+
+  svgContainer.value.innerHTML = svgText
+
+  const svg = svgContainer.value.querySelector('svg')
+
+  if (!svg) {
+    console.warn('SVG não encontrado')
+    return
+  }
+
+const clipPaths = Array.from(svg.querySelectorAll('clipPath path'))
+  .filter((path) => {
+    const d = path.getAttribute('d') || ''
+
+    if (!d.includes('C') && !d.includes('c')) return false
+
+    try {
+      return path.getTotalLength() > 80
+    } catch {
+      return false
+    }
+  })
+  .filter((path, index) => index === 0 || index === 2)
+    console.log(
+  clipPaths.map((path) => ({
+    length: path.getTotalLength(),
+    d: path.getAttribute('d')?.slice(0, 80),
+  }))
+)
+
+  if (!clipPaths.length) {
+    console.warn('Nenhum path animável encontrado')
+    return
+  }
+
+  // remove o visual original para ele não aparecer seco
+  Array.from(svg.children).forEach((child) => {
+    if (child.tagName.toLowerCase() !== 'defs') {
+      child.remove()
+    }
+  })
+
+  // remove grupo animado antigo, útil no hot reload
+  svg.querySelectorAll('.animated-signature-paths').forEach((el) => el.remove())
+
+  const group = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+  group.classList.add('animated-signature-paths')
+  svg.appendChild(group)
+
+  const animatedPaths = clipPaths.map((oldPath) => {
+    const path = oldPath.cloneNode(true)
+
+    path.removeAttribute('clip-path')
+    path.removeAttribute('clip-rule')
+    path.removeAttribute('fill-rule')
+
+    path.setAttribute('fill', 'none')
+    path.setAttribute('stroke', '#B2C73A')
+    path.setAttribute('stroke-width', '2')
+    path.setAttribute('stroke-linecap', 'round')
+    path.setAttribute('stroke-linejoin', 'round')
+
+    group.appendChild(path)
+
+    return path
+  })
+
+  animatedPaths.forEach((path) => {
+    const length = path.getTotalLength()
+
+    gsap.set(path, {
+      strokeDasharray: length,
+      strokeDashoffset: length,
+      opacity: 1,
+    })
+  })
+
+  gsap.set(svgContainer.value, {
+    visibility: 'visible',
+  })
+
+  gsap.to(animatedPaths, {
+    strokeDashoffset: 0,
+    duration: 3,
+    ease: 'power2.inOut',
+    stagger: 0.2,
+    overwrite: 'auto',
+  })
+}
 
 
 onMounted(async() => {
+    await mysignaturasvgomaga()
     updateBoxes()
     await animateBoxesIntro()
     window.addEventListener('resize', updateBoxes)
@@ -305,6 +402,9 @@ onBeforeUnmount(() => {
     </div>
     <div ref="boxScrub1" class="box box1">box1</div>
     <div ref="boxScrub2" class="box box2">box2</div>
+      <section class="signature-section">
+    <div ref="svgContainer" class="signature-svg"></div>
+  </section>
     <div ref="boxScrub3" class="box box3">box3</div>
 
     <div
@@ -318,7 +418,7 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <div
+    <!-- <div
       class="h1"
       ref="omaga"
       @mousemove="mousemoveoomaga"
@@ -332,7 +432,7 @@ onBeforeUnmount(() => {
       >
         {{ letra }}
       </span>
-    </div>
+    </div> -->
   </section>
 </template>
 
@@ -440,5 +540,26 @@ onBeforeUnmount(() => {
 .h1 {
   position: absolute;
   z-index: 2;
+}
+.signature-section {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.signature-svg {
+  width: min(80vw, 700px);
+  color: #B2C73A;
+}
+
+.signature-svg :deep(svg) {
+  width: 100%;
+  height: auto;
+  overflow: visible;
 }
 </style>
