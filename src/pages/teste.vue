@@ -184,7 +184,7 @@ onMounted(async() => {
       borderRadius: '20%',
     })
 
-    // Essa animação mexe no wrapper
+    // Essa animação mexe no bla bla bla ble ble ble blu blu blu
     gsap.to(boxScrub4Wrap.value, {
       x: -400,
       y: -100,
