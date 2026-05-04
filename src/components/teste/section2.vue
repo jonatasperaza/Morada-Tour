@@ -4,8 +4,15 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
 import { HDRLoader } from 'three/addons/loaders/HDRLoader.js'
+import ParticlesJs from './ParticlesJs.vue'
+
+
 const sectionRef = ref(null)
 
+
+/**
+ * THREE / LIQUID / HELMET
+ */
 let renderer
 let scene
 let camera
@@ -13,6 +20,9 @@ let animationId
 let clock
 let blob
 let modelGroup
+
+let width = 1
+let height = 1
 
 let targetRotationX = 0
 let targetRotationY = 0
@@ -22,9 +32,6 @@ const baseRotationY = 0
 const baseRotationZ = 0
 
 const tiltStrength = 0.22
-
-let width = 1
-let height = 1
 
 const gu = {
   time: { value: 0 },
@@ -87,7 +94,6 @@ class LiquidBlob {
 
               float rVal = texture2D(fbTexture, vUv).r;
 
-              // faz o rastro antigo sumir devagar
               rVal -= clamp(dTime / pointerDuration, 0.0, 0.08);
               rVal = clamp(rVal, 0.0, 1.0);
 
@@ -102,8 +108,7 @@ class LiquidBlob {
                 f = 1.0 - smoothstep(pointerRadius * 0.12, pointerRadius, dist);
               }
 
-              // força da mancha nova
-              rVal += f * 0.08;;
+              rVal += f * 0.08;
               rVal = clamp(rVal, 0.0, 1.0);
 
               diffuseColor.rgb = vec3(rVal);
@@ -152,6 +157,7 @@ class LiquidBlob {
 
 function applyLiquidRevealToMaterial(material) {
   material.transparent = true
+  material.depthWrite = true
 
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uBlob = {
@@ -187,16 +193,21 @@ function applyLiquidRevealToMaterial(material) {
 
         float mask = smoothstep(0.04, 0.35, blobData.r);
 
-        if (mask < 0.02) discard;
+        /*
+          EFEITO INVERTIDO:
+          O capacete aparece normalmente.
+          Onde o mouse passa, a máscara esconde o capacete.
+        */
+        if (mask > 0.35) discard;
 
         #include <clipping_planes_fragment>
       `
     ).replace(
-  '#include <dithering_fragment>',
-  `
-    #include <dithering_fragment>
-  `
-)
+      '#include <dithering_fragment>',
+      `
+        #include <dithering_fragment>
+      `
+    )
   }
 
   material.needsUpdate = true
@@ -262,71 +273,8 @@ function loadEnvironment() {
 
   hdrLoader.load('/studio_small_08_1k--light.hdr', (texture) => {
     texture.mapping = THREE.EquirectangularReflectionMapping
-
     scene.environment = texture
   })
-}
-
-function createBackgroundPlane() {
-  const geometry = new THREE.PlaneGeometry(2, 2)
-
-  const material = new THREE.ShaderMaterial({
-    uniforms: {
-      uBlob: {
-        value: blob.rtOutput.texture,
-      },
-      uTime: gu.time,
-      uBaseColor: {
-        value: new THREE.Color('#101400'),
-      },
-      uLiquidColor: {
-        value: new THREE.Color('#d2ff00'),
-      },
-    },
-    vertexShader: `
-      varying vec2 vUv;
-
-      void main() {
-        vUv = uv;
-        gl_Position = vec4(position.xy, 0.0, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform sampler2D uBlob;
-      uniform float uTime;
-      uniform vec3 uBaseColor;
-      uniform vec3 uLiquidColor;
-
-      varying vec2 vUv;
-
-      void main() {
-        vec2 uv = vUv;
-
-        float blob = texture2D(uBlob, uv).r;
-        float mask = smoothstep(0.02, 0.75, blob);
-
-        float wave1 = sin(uv.y * 28.0 + uTime * 2.0);
-        float wave2 = cos(uv.x * 22.0 - uTime * 1.7);
-
-        float wave = (wave1 + wave2) * 0.5;
-
-        vec3 color = mix(uBaseColor, uLiquidColor, mask);
-
-        color += mask * wave * 0.08;
-
-        gl_FragColor = vec4(color, 1.0);
-      }
-    `,
-    depthWrite: false,
-    depthTest: false,
-  })
-
-  const plane = new THREE.Mesh(geometry, material)
-
-  // garante que ele fique no fundo da renderização
-  plane.renderOrder = -10
-
-  scene.add(plane)
 }
 
 function loadModel() {
@@ -334,6 +282,7 @@ function loadModel() {
 
   const dracoLoader = new DRACOLoader()
   dracoLoader.setDecoderPath('/draco/')
+  dracoLoader.setDecoderConfig({ type: 'wasm' })
 
   gltfLoader.setDRACOLoader(dracoLoader)
 
@@ -383,7 +332,6 @@ function loadModel() {
   )
 }
 
-
 function initThree() {
   const section = sectionRef.value
   if (!section) return
@@ -394,35 +342,45 @@ function initThree() {
   gu.aspect.value = width / height
 
   scene = new THREE.Scene()
-  scene.background = new THREE.Color('#101400')
+
+  /*
+    Importante:
+    scene.background precisa ser null para o SVG topográfico,
+    que está no HTML/CSS atrás do canvas, aparecer.
+  */
+  scene.background = null
 
   camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 100)
   camera.position.set(0, 0.2, 6)
 
   renderer = new THREE.WebGLRenderer({
     antialias: true,
-    alpha: false,
+    alpha: true,
   })
 
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
   renderer.setSize(width, height)
 
+  renderer.domElement.classList.add('helmet-canvas')
+
+  renderer.outputColorSpace = THREE.SRGBColorSpace
+  renderer.toneMapping = THREE.ACESFilmicToneMapping
+  renderer.toneMappingExposure = 0.75
+
   section.appendChild(renderer.domElement)
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.35)
-scene.add(ambientLight)
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.35)
+  scene.add(ambientLight)
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2)
-directionalLight.position.set(3, 5, 4)
-scene.add(directionalLight)
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2)
+  directionalLight.position.set(3, 5, 4)
+  scene.add(directionalLight)
 
-const pointLight = new THREE.PointLight(0xb2c73a, 0.8, 10)
-pointLight.position.set(-3, 2, 3)
-scene.add(pointLight)
+  const pointLight = new THREE.PointLight(0xb2c73a, 0.8, 10)
+  pointLight.position.set(-3, 2, 3)
+  scene.add(pointLight)
 
   blob = new LiquidBlob(renderer, width, height)
-
-  createBackgroundPlane()
 
   loadModel()
   loadEnvironment()
@@ -447,6 +405,7 @@ function animate() {
 
   renderer.render(scene, camera)
 }
+
 function onPointerMove(event) {
   if (!sectionRef.value || !blob) return
 
@@ -481,9 +440,6 @@ function onResize() {
   camera.updateProjectionMatrix()
 
   renderer.setSize(width, height)
-  renderer.outputColorSpace = THREE.SRGBColorSpace
-renderer.toneMapping = THREE.ACESFilmicToneMapping
-renderer.toneMappingExposure = 0.75
   blob.setSize(width, height)
 }
 
@@ -528,6 +484,8 @@ onBeforeUnmount(() => {
     @pointermove="onPointerMove"
     @pointerleave="onPointerLeave"
   >
+    <ParticlesJs class="particles-layer" />
+
     <div class="content">
       <p>REDD BULL TE DÁ ASSSAAAAS</p>
       <h2>VERSTAPPEN É MELHOR</h2>
@@ -541,15 +499,45 @@ onBeforeUnmount(() => {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: #111;
+  background: #050505;
+  isolation: isolate;
 }
 
-.liquid-section :deep(canvas) {
+.particles-layer {
   position: absolute;
   inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.particles-layer :deep(canvas) {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+
+
+.liquid-section > canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1 !important;
   width: 100%;
   height: 100%;
   display: block;
+  pointer-events: none;
+}
+
+:deep(.helmet-canvas) {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  pointer-events: none;
 }
 
 .content {
@@ -557,7 +545,6 @@ onBeforeUnmount(() => {
   z-index: 2;
   left: 7vw;
   bottom: 9vh;
-  color: white;
   pointer-events: none;
   mix-blend-mode: difference;
 }
@@ -575,10 +562,4 @@ onBeforeUnmount(() => {
   line-height: 0.85;
 }
 
-.content span {
-  display: block;
-  margin-top: 20px;
-  font-size: 1.1rem;
-  opacity: 0.75;
-}
 </style>
